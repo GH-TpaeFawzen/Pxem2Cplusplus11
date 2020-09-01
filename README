@@ -1,3 +1,8 @@
+# Final update (2020-09-01)
+This project has been abandoned because of very difficulties of debugging.
+Therefore, I'd like to publish everything here in CC0 license.
+If you'd like to redevelop this, go ahead.
+
 `Pxem2C++11' is a shell script that compiles a Pxem program into C++11 program.
 The script is designed to be as portable as possible.
 This tool satisfies original specification of Pxem:
@@ -21,4 +26,4 @@ This program's repository is on:
 <<https://github.com/GH-TpaeFawzen/Pxem2Cplusplus11>>
 
 # Licensing
-This software is released under the MIT License, see `LICENSE'.
+CC0.
