@@ -1,0 +1,46 @@
+`Pxem2C++11' is a portable shell script that compiles a Pxem program into
+C++11 program, outputting the program into standard output.
+
+# Specification of Pxem to be compiled
+This tool satisfies original specification of Pxem,
+which is described in Japanese:
+
+* Original (dead page)
+  * <<http://cfs.maxn.jp/neta/pxem.php>> -- original but dead page
+* An archive of the page above
+  * <<http://web.archive.org/web/20120605223423/http://cfs.maxn.jp/neta/pxem.php>>
+
+Therefore, these are satisfied:
+
+* incompleteness of `.r`
+* incompleteness of `.t`
+
+This tool does never check out if your Pxem program is syntaxically correct;
+does never checks if each `.[wxyz]` command and `.a` matches correctly.
+If your program were syntaxically incorrect,
+the invalid C++11 program will be output.
+
+# Requirements
+* POSIX-compliant shell (Bourne shell)
+* Some POSIX-compliant tools to compile into C++11:
+  * cat, od, tr, sed, basename, printf, grep.
+* C++11-compliant compiler to compile generated C++11 program
+
+# Files
+* `LICENSE`. Description of license for this software.
+* `README`. You are reading.
+* `pxem2c++11`. The tool.
+* `pxem2c++11.1`. Man page.
+* `test`. The directory to have several Pxem programs for testing.
+
+# Internet resources
+This program's repository is on:
+
+<<https://github.com/GH-TpaeFawzen/Pxem2Cplusplus11>>
+
+# Licensing
+This software is released under the MIT License, see `LICENSE'.
+
+# History
+* v1.0. 2020.05.12.
+* v1.1. 2020.08.25.

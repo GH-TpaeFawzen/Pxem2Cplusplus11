@@ -1,0 +1,9 @@
+This program should cat, but the input must be non-LF-terminated string, and
+last line should be discarded.
+
+# example
+```
+$ printf 'This\nis\nsparta' | ./a.out
+This
+is$ 
+```

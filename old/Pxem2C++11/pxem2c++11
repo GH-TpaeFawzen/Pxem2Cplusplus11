@@ -1,0 +1,434 @@
+#!/bin/sh
+set -x
+################################################################################
+# pxem2c++11 -- Pxem-to-C++11 compiler in portable shellscript
+# 
+# Copyright (c) 2020 TpaeFawzen
+# 
+# This software is released under the MIT License.
+# http://opensource.org/licenses/mit-license.php
+################################################################################
+
+################################################################################
+# Usage: $0 FILE > output.cpp && path/to/c++11/compiler output.cpp && ./a.out
+################################################################################
+
+set -eu
+umask 0022
+export LC_ALL=C
+export PATH="$(command -p getconf PATH 2>/dev/null)${PATH+:}${PATH-}"
+case $PATH in :*) PATH=${PATH#?};; esac
+export UNIX_STD=2003
+
+usage(){
+	cat >&2 <<-EOF
+	Usage: $0 FILE > output.cpp &&
+	       path/to/c++11/compiler output.cpp &&
+	       ./a.out
+	Note: Your C++11 compiler may warn the compiled C++11 code,
+	      because of casting char-typed value into int value.
+	EOF
+}
+
+case "$#" in 0) usage; exit 1;; esac
+
+FILEPATH="$1"
+
+### header #####################################################################
+cat << EOF
+/*
+ * This C++11 program was compiled from '$FILEPATH' with Pxem2C++11.
+ */
+
+#include<string>
+
+using Int_t=int;
+using String_t=std::string;
+
+EOF
+
+### binary2hex #################################################################
+binary2hex(){
+	od -A n -t x1 -v |
+		tr -Cd '0123456789abcdef\n' |
+		sed "s:..:&,:g"
+}
+
+FILENAME=$(basename "$FILEPATH")
+FILENAME_HEX=$(printf '%s' "$FILENAME" | binary2hex)
+
+### includes contents of file? #################################################
+set +e
+HAS_CONTENTS=$(printf '%s\n' "$FILENAME" | 
+	grep '\.[fFeE]' >/dev/null;
+	echo $?)
+set -e
+
+case "$HAS_CONTENTS" in
+	0) CONTENTS=$(cat "FILEPATH")
+	   CONTENTS_HEX=$(cat "FILEPATH" | binary2hex)
+	   ;;
+	*) CONTENTS= CONTENTS_HEX= ;;
+esac
+
+### what kind of commands are in? ##############################################
+command_is_in(){
+	printf '%s\n%s\n' "$FILENAME" "$CONTENTS" |
+	grep "$1" >/dev/null;
+	echo $?
+}
+
+set +e
+HAS_IO=$(command_is_in '\.[pPoOnNiI_]')
+HAS_REVERSE=$(command_is_in '\.[vV]')
+HAS_RANDOM=$(command_is_in '\.[rR]')
+HAS_ABS=$(command_is_in '\.-')
+HAS_EXCEPTION=$(command_is_in '\.[_rRtT$%]')
+
+HAS_CONTENTS_LITERAL=$(command_is_in '\.[fF]')
+HAS_SUBROUTINE=$(command_is_in '\.[eE]')
+set -e
+
+### what do I have to include? #################################################
+cat <<EOF
+// The libraries <iostream>, <algorithm>, <random>, <cmath>, and <stdexcept>
+// will be included depending on your Pxem program.
+EOF
+
+if_1_echo_2(){
+	case "$1" in 0) echo "$2" ;; esac
+}
+if_1_echo_2 "$HAS_IO" "#include<iostream>"
+if_1_echo_2 "$HAS_REVERSE" "#include<algorithm>"
+if_1_echo_2 "$HAS_RANDOM" "#include<random>"
+if_1_echo_2 "$HAS_ABS"  "#include<cmath>"
+if_1_echo_2 "$HAS_EXCEPTION" "#include<stdexcept>"
+
+echo # for newline
+
+### now in namespace pxemProgram ###############################################
+cat <<EOF
+namespace pxemProgram{
+
+struct Heap{
+   bool is_used=false;
+   Int_t value;
+};
+
+EOF
+
+# subroutine?
+case "$HAS_SUBROUTINE" in
+	0) cat<<-EOF
+	   String_t subroutine(String_t old_stack);
+	
+	EOF
+	;;
+esac
+
+# contents_literal?
+case "$HAS_CONTENTS_LITERAL" in
+	0)
+	CONTENTS_LITERAL=$(
+		printf '%s\n' "$CONTENTS_HEX" |
+		sed 's/..,/0x&/g')
+	cat<<-EOF
+	const String_t contents_literal{$CONTENTS_LITERAL};
+	
+	EOF
+	;;
+esac
+
+# randomizer?
+case "$HAS_RANDOM" in
+	0) cat <<-EOF
+	std::random_device seed_gen;
+	std::default_random_engine engine(seed_gen());
+	
+	EOF
+	;;
+esac
+
+
+### lexer for Pxem program #####################################################
+lexer(){
+(
+	LF=$(printf '\\\n_'); LF=${LF%_}
+	SED_SCRIPT=$({
+		cat | grep '.' |
+		sed 's/^\(.*\) \(.*\)$/s:\1:\\'"$LF"'\2\\'"$LF"'\\'"$LF"':g/'
+		}<<-TABLE
+		2e,21, MULT
+		2e,24, QUOT
+		2e,25, MOD
+		2e,2b, ADD
+		2e,2d, DIFF
+		
+		2e,41, END_LOOP
+		
+		2e,43, DUPLICATE
+		2e,44, RET
+		2e,45, SUBROUTINE
+		2e,46, CONTENT_LITERAL
+		
+		2e,49, IN_I
+		
+		2e,4d, PUSH_H
+		2e,4e, OUT_I
+		2e,4f, OUT_C
+		2e,50, OUT_STR
+		
+		2e,52, RAND
+		2e,53, DISCARD
+		2e,54, POP_H
+		
+		2e,56, REVERSE
+		2e,57, JUMP_ZERO
+		2e,58, JUMP_NOT_LESS
+		2e,59, JUMP_NOT_GREATER
+		2e,5a, JUMP_EQUAL
+		
+		2e,5f, IN_I
+		
+		2e,61, END_LOOP
+		
+		2e,63, DUPLICATE
+		2e,64, RET
+		2e,65, SUBROUTINE
+		2e,66, CONTENT_LITERAL
+		
+		2e,69, IN_I
+		
+		2e,6d, PUSH_H
+		2e,6e, OUT_I
+		2e,6f, OUT_C
+		2e,70, OUT_STR
+		
+		2e,72, RAND
+		2e,73, DISCARD
+		2e,74, POP_H
+		
+		2e,76, REVERSE
+		2e,77, JUMP_ZERO
+		2e,78, JUMP_NOT_LESS
+		2e,79, JUMP_NOT_GREATER
+		2e,7a, JUMP_EQUAL
+		TABLE
+	)
+	sed "$SED_SCRIPT"
+)
+}
+
+mnemonic_translator(){
+(
+	case "$1" in
+		fname) RET='return;';;
+		*)     RET='return stack;';;
+	esac
+	sed '
+	/MULT/c\
+'"$(	)"'   do{\
+'"$(	)"'      if(stack.empty()||stack.substr(1).empty()) break;\
+'"$(	)"'      stack=String_t{stack[0]*stack[1]}+stack.substr(2);\
+'"$(	)"'   }while(false); // .!
+	/QUOT/c\
+'"$(	)"'   do{\
+'"$(	)"'      if(stack.empty()||stack.substr(1).empty()) break;\
+'"$(	)"'      Int_t first{stack[0]}, second{stack[1]};\
+'"$(	)"'      if(!first*second)\
+'"$(	)"'         throw std::domain_error{".$: tried to zero-division"};\
+'"$(	)"'      stack=String_t{first>second?first/second:second/first}\
+'"$(	)"'            +stack.substr(2);\
+'"$(	)"'   }while(false); // .$
+	/MOD/c\
+'"$(	)"'   do{\
+'"$(	)"'      if(stack.empty()||stack.substr(1).empty()) break;\
+'"$(	)"'      Int_t first{stack[0]}, second{stack[1]};\
+'"$(	)"'      if(!first*second)\
+'"$(	)"'         throw std::domain_error{".%: tried to zero-division"};\
+'"$(	)"'      stack=String_t{first>second?first%second:second%first}\
+'"$(	)"'            +stack.substr(2);\
+'"$(	)"'   }while(false); // .%
+	/ADD/c\
+'"$(	)"'   do{\
+'"$(	)"'      if(stack.empty()||stack.substr(1).empty()) break;\
+'"$(	)"'      stack=String_t{stack[0]+stack[1]}+stack.substr(2);\
+'"$(	)"'   }while(false); // .+
+	/DIFF/c\
+'"$(	)"'   do{\
+'"$(	)"'      if(stack.empty()||stack.substr(1).empty()) break;\
+'"$(	)"'      stack=String_t{std::abs(stack[0]-stack[1])}+stack.substr(2);\
+'"$(	)"'   }while(false); // .-
+
+	/END_LOOP/c\
+'"$(	)"'   } // .a
+
+	/DUPLICATE/c\
+'"$(	)"'   do{\
+'"$(	)"'      if(stack.empty()) break;\
+'"$(	)"'      stack=String_t{stack[0]}+stack;\
+'"$(	)"'   }while(false); // .c
+	/RET/c\
+'"$(	)"'   '"$RET"' // .d
+	/SUBROUTINE/c\
+'"$(	)"'   stack=subroutine(stack)+stack; // .e
+	/CONTENT_LITERAL/c\
+'"$(	)"'   stack=contents_literal+stack; // .f
+
+	/IN_I/c\
+'"$(	)"'   {\
+'"$(	)"'      Int_t ch{std::cin.get()};\
+'"$(	)"'      stack=String_t{ch==EOF?-1:ch}+stack;\
+'"$(	)"'   } // .i
+
+	/PUSH_H/c\
+'"$(	)"'   if(heap.is_used) stack=String_t{heap.value}+stack; // .m
+	/OUT_I/c\
+'"$(	)"'   if(!stack.empty()){\
+'"$(	)"'      std::cout<<(Int_t)stack[0];\
+'"$(	)"'      stack=stack.substr(1);\
+'"$(	)"'   } // .n
+	/OUT_C/c\
+'"$(	)"'   if(!stack.empty()){\
+'"$(	)"'      std::cout<<(char)stack[0];\
+'"$(	)"'      stack=stack.substr(1);\
+'"$(	)"'   } // .o
+	/OUT_STR/c\
+'"$(	)"'   {\
+'"$(	)"'      std::cout<<stack;\
+'"$(	)"'      stack=String_t{};\
+'"$(	)"'   } // .p
+
+	/RAND/c\
+'"$(	)"'   {\
+'"$(	)"'      if(stack.empty())\
+'"$(	)"'         throw std::invalid_argument{\
+'"$(	)"'            ".r: The original specification does not specify the case "\
+'"$(	)"'            "when stack were empty"};\
+'"$(	)"'      if(stack[0]<0)\
+'"$(	)"'         throw std::domain_error{\
+'"$(	)"'            ".r: The original specification does not specify the case "\
+'"$(	)"'            "when popped value were <=0"};\
+'"$(	)"'      std::uniform_int_distribution<> dist(0, stack[0]-1);\
+'"$(	)"'      stack=String_t{dist(engine)}+stack.substr(1);\
+'"$(	)"'   } // .r
+	/DISCARD/c\
+'"$(	)"'   if(!stack.empty()){\
+'"$(	)"'      stack=stack.substr(1);\
+'"$(	)"'   } // .s
+	/POP_H/c\
+'"$(	)"'   {\
+'"$(	)"'      if(stack.empty())\
+'"$(	)"'         throw std::invalid_argument{\
+'"$(	)"'            ".t: The original specification does not specify the case "\
+'"$(	)"'            "when stack were empty"};\
+'"$(	)"'      heap.is_used=true;\
+'"$(	)"'      heap.value=stack[0];\
+'"$(	)"'      stack=stack.substr(1);\
+'"$(	)"'   } // .t
+
+	/REVERSE/c\
+'"$(	)"'   {\
+'"$(	)"'     std::reverse(stack.begin(), stack.end());\
+'"$(	)"'   } // .v
+	/JUMP_ZERO/c\
+'"$(	)"'   while(true){\
+'"$(	)"'   if(!stack.empty()){\
+'"$(	)"'      Int_t val{stack[0]};\
+'"$(	)"'      stack=stack.substr(1);\
+'"$(	)"'      if(!val) break;\
+'"$(	)"'   } // .w
+	/JUMP_NOT_LESS/c\
+'"$(	)"'   while(true){\
+'"$(	)"'   if(!stack.empty()&&!stack.substr(1).empty()){\
+'"$(	)"'      Int_t first{stack[0]}, second{stack[1]};\
+'"$(	)"'      stack=stack.substr(2);\
+'"$(	)"'      if(!(first<second)) break;\
+'"$(	)"'   } // .x
+	/JUMP_NOT_GREATER/c\
+'"$(	)"'   while(true){\
+'"$(	)"'   if(!stack.empty()&&!stack.substr(1).empty()){\
+'"$(	)"'      Int_t first{stack[0]}, second{stack[1]};\
+'"$(	)"'      stack=stack.substr(2);\
+'"$(	)"'      if(!(first>second)) break;\
+'"$(	)"'   } // .y
+	/JUMP_EQUAL/c\
+'"$(	)"'   while(true){\
+'"$(	)"'   if(!stack.empty()&&!stack.substr(1).empty()){\
+'"$(	)"'      Int_t first{stack[0]}, second{stack[1]};\
+'"$(	)"'      stack=stack.substr(2);\
+'"$(	)"'      if(first==second) break;\
+'"$(	)"'   } // .z
+
+	/IN_I/c\
+'"$(	)"'   {\
+'"$(	)"'      Int_t i;\
+'"$(	)"'      std::cin>>i;\
+'"$(	)"'      if(std::cin.fail()) throw runtime_error{\
+'"$(	)"'         "._: you were supposed to input an integer but failed"};\
+'"$(	)"'      stack=String_t{i}+stack;\
+'"$(	)"'   } // ._
+
+	/^$/{d;b}
+
+	s/..,/0x&/g
+	s|.*|   stack=String_t{&}+stack; // string literal|
+	'
+)
+}
+
+### now contents of main routine ###############################################
+### pxemProgram::main_routine() ################################################
+cat <<EOF
+void main_routine(){
+   String_t stack;
+   Heap heap;
+
+EOF
+echo "$FILENAME_HEX" | lexer | mnemonic_translator fname
+cat<<EOF
+} // pxemProgram::main_routine()
+
+EOF
+
+### next: contents of subroutine ###############################################
+### pxemProgram::subroutine() ##################################################
+case "$HAS_SUBROUTINE" in
+	0)
+	cat <<-EOF
+	String_t subroutine(String_t old_stack){
+	   String_t stack=old_stack;
+	   Heap heap;
+	
+	EOF
+	echo "$CONTENTS_HEX" | lexer | mnemonic_translator contents
+	cat <<-EOF
+	   return stack;
+	} // pxemProgram::subroutine()
+	
+	EOF
+	;;
+esac
+
+### end of namespace pxemProgram ###############################################
+echo '} // namespace pxemProgram'
+
+### main() #####################################################################
+cat <<EOF
+
+int main(){
+   # if __cplusplus < 201103L
+   std::cerr<<"Please recompile with C++11-compliant compiler."<<std::endl;
+   # else
+   pxemProgram::main_routine();
+   # endif
+   return 0;
+} // main()
+
+// end of program //
+EOF
+
+### finally ####################################################################
+exit 0
+
+### end of pxem2c++11 ###

@@ -1,0 +1,47 @@
+.TH PXEM2C++11 1 "last update: 2020.08.25" TpaeFawzen "version 1.1"
+.SH NAME
+pxem2c++11 \- Pxem\-to\-C++11 compiler in portable shellscript
+.SH SYNOPSIS
+.B pxem2C++11
+.IR FILE
+>
+.IR output.cpp
+&&
+\"
+.IR path/to/C++11/compiler
+.IR output.cpp
+&&
+\"
+.IR ./a.out
+.SH DESCRIPTION
+.B pxem2c++11
+is a naïve compiler for Pxem, written in POSIX-compliant shellscript.
+It outputs a corresponding C++11 program to standard output.
+
+This compiler does never optimize your program
+nor check if your Pxem program is syntaxically correct;
+if each looping command '.w', '.x', '.y', and '.z' matches '.a'.
+
+.SH OPTIONS
+This program does not accept any options.
+
+.SH BUGS
+I tried to write as portable as possible, but if you found anything not working,
+I'd like you to report at:
+
+https://github.com/GH-TpaeFawzen/Pxem2Cplusplus11/issues
+
+Or, just modify yourself and republish it.
+
+.SH INTERNET RESOURCES
+The repository for this software is available on following page:
+
+https://github.com/GH-TpaeFawzen/Pxem2Cplusplus11
+
+.SH LICENSES
+Copyright (c) 2020 TpaeFawzen
+
+This software used to be released under the MIT License in v1.0, but
+
+http://opensource.org/licenses/mit-license.php
+.\" end of pxem2c++11.1 """

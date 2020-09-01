@@ -1,0 +1,596 @@
++ set -eu
++ umask 0022
++ export LC_ALL=C
++ LC_ALL=C
+++ command -p getconf PATH
++ export PATH=/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
++ PATH=/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
++ case $PATH in
++ export UNIX_STD=2003
++ UNIX_STD=2003
++ case "$#" in
++ FILEPATH=test/Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe
++ cat
+++ basename test/Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe
++ FILENAME=Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe
+++ printf %s Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe
+++ binary2hex
+++ od -A n -t x1 -v
+++ tr -Cd '0123456789abcdef\n'
+++ sed 's:..:&,:g'
++ FILENAME_HEX='48,65,6c,6c,6f,2e,70,41,61,2e,2d,41,6d,2e,2d,2e,
+70,77,6f,72,6c,64,2e,70,61,6b,2e,2d,41,62,2e,2d,
+2e,70,78,65,'
++ set +e
+++ printf '%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe
+++ grep '\.[fFeE]'
+++ echo 1
++ HAS_CONTENTS=1
++ set -e
++ case "$HAS_CONTENTS" in
++ CONTENTS=
++ CONTENTS_HEX=
++ set +e
+++ command_is_in '\.[pPoOnNiI_]'
+++ printf '%s\n%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe ''
+++ grep '\.[pPoOnNiI_]'
+++ echo 0
++ HAS_IO=0
+++ command_is_in '\.[vV]'
+++ printf '%s\n%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe ''
+++ grep '\.[vV]'
+++ echo 1
++ HAS_REVERSE=1
+++ command_is_in '\.[rR]'
+++ printf '%s\n%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe ''
+++ grep '\.[rR]'
+++ echo 1
++ HAS_RANDOM=1
+++ command_is_in '\.-'
+++ printf '%s\n%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe ''
+++ grep '\.-'
+++ echo 0
++ HAS_ABS=0
+++ command_is_in '\.[_rRtT$%]'
+++ printf '%s\n%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe ''
+++ grep '\.[_rRtT$%]'
+++ echo 1
++ HAS_EXCEPTION=1
+++ command_is_in '\.[fF]'
+++ printf '%s\n%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe ''
+++ grep '\.[fF]'
+++ echo 1
++ HAS_CONTENTS_LITERAL=1
+++ command_is_in '\.[eE]'
+++ printf '%s\n%s\n' Hello.pAa.-Am.-.pworld.pak.-Ab.-.pxe ''
+++ grep '\.[eE]'
+++ echo 1
++ HAS_SUBROUTINE=1
++ set -e
++ cat
++ if_1_echo_2 0 '#include<iostream>'
++ case "$1" in
++ echo '#include<iostream>'
++ if_1_echo_2 1 '#include<algorithm>'
++ case "$1" in
++ if_1_echo_2 1 '#include<random>'
++ case "$1" in
++ if_1_echo_2 0 '#include<cmath>'
++ case "$1" in
++ echo '#include<cmath>'
++ if_1_echo_2 1 '#include<stdexcept>'
++ case "$1" in
++ echo
++ cat
++ case "$HAS_SUBROUTINE" in
++ case "$HAS_CONTENTS_LITERAL" in
++ case "$HAS_RANDOM" in
++ cat
++ echo '48,65,6c,6c,6f,2e,70,41,61,2e,2d,41,6d,2e,2d,2e,
+70,77,6f,72,6c,64,2e,70,61,6b,2e,2d,41,62,2e,2d,
+2e,70,78,65,'
++ lexer
++ mnemonic_translator fname
++ case "$1" in
++ RET='return;'
+++ printf '\\\n_'
++ LF='\
+_'
++ LF='\
+'
+++ cat
+++ grep .
+++ sed 's/^\(.*\) \(.*\)$/s:\1:\\\
+\2\\\
+\\\
+:g/'
++ sed '
+	/MULT/c\
+   do{\
+      if(stack.empty()||stack.substr(1).empty()) break;\
+      stack=String_t{stack[0]*stack[1]}+stack.substr(2);\
+   }while(false); // .!
+	/QUOT/c\
+   do{\
+      if(stack.empty()||stack.substr(1).empty()) break;\
+      Int_t first{stack[0]}, second{stack[1]};\
+      if(!first*second)\
+         throw std::domain_error{".$: tried to zero-division"};\
+      stack=String_t{first>second?first/second:second/first}\
+            +stack.substr(2);\
+   }while(false); // .$
+	/MOD/c\
+   do{\
+      if(stack.empty()||stack.substr(1).empty()) break;\
+      Int_t first{stack[0]}, second{stack[1]};\
+      if(!first*second)\
+         throw std::domain_error{".%: tried to zero-division"};\
+      stack=String_t{first>second?first%second:second%first}\
+            +stack.substr(2);\
+   }while(false); // .%
+	/ADD/c\
+   do{\
+      if(stack.empty()||stack.substr(1).empty()) break;\
+      stack=String_t{stack[0]+stack[1]}+stack.substr(2);\
+   }while(false); // .+
+	/DIFF/c\
+   do{\
+      if(stack.empty()||stack.substr(1).empty()) break;\
+      stack=String_t{std::abs(stack[0]-stack[1])}+stack.substr(2);\
+   }while(false); // .-
+
+	/END_LOOP/c\
+   } // .a
+
+	/DUPLICATE/c\
+   do{\
+      if(stack.empty()) break;\
+      stack=String_t{stack[0]}+stack;\
+   }while(false); // .c
+	/RET/c\
+   return; // .d
+	/SUBROUTINE/c\
+   stack=subroutine(stack)+stack; // .e
+	/CONTENT_LITERAL/c\
+   stack=contents_literal+stack; // .f
+
+	/IN_I/c\
+   {\
+      Int_t ch{std::cin.get()};\
+      stack=String_t{ch==EOF?-1:ch}+stack;\
+   } // .i
+
+	/PUSH_H/c\
+   if(heap.is_used) stack=String_t{heap.value}+stack; // .m
+	/OUT_I/c\
+   if(!stack.empty()){\
+      std::cout<<(Int_t)stack[0];\
+      stack=stack.substr(1);\
+   } // .n
+	/OUT_C/c\
+   if(!stack.empty()){\
+      std::cout<<(char)stack[0];\
+      stack=stack.substr(1);\
+   } // .o
+	/OUT_STR/c\
+   {\
+      std::cout<<stack;\
+      stack=String_t{};\
+   } // .p
+
+	/RAND/c\
+   {\
+      if(stack.empty())\
+         throw std::invalid_argument{\
+            ".r: The original specification does not specify the case "\
+            "when stack were empty"};\
+      if(stack[0]<0)\
+         throw std::domain_error{\
+            ".r: The original specification does not specify the case "\
+            "when popped value were <=0"};\
+      std::uniform_int_distribution<> dist(0, stack[0]-1);\
+      stack=String_t{dist(engine)}+stack.substr(1);\
+   } // .r
+	/DISCARD/c\
+   if(!stack.empty()){\
+      stack=stack.substr(1);\
+   } // .s
+	/POP_H/c\
+   {\
+      if(stack.empty())\
+         throw std::invalid_argument{\
+            ".t: The original specification does not specify the case "\
+            "when stack were empty"};\
+      heap.is_used=true;\
+      heap.value=stack[0];\
+      stack=stack.substr(1);\
+   } // .t
+
+	/REVERSE/c\
+   {\
+     std::reverse(stack.begin(), stack.end());\
+   } // .v
+	/JUMP_ZERO/c\
+   while(true){\
+   if(!stack.empty()){\
+      Int_t val{stack[0]};\
+      stack=stack.substr(1);\
+      if(!val) break;\
+   } // .w
+	/JUMP_NOT_LESS/c\
+   while(true){\
+   if(!stack.empty()&&!stack.substr(1).empty()){\
+      Int_t first{stack[0]}, second{stack[1]};\
+      stack=stack.substr(2);\
+      if(!(first<second)) break;\
+   } // .x
+	/JUMP_NOT_GREATER/c\
+   while(true){\
+   if(!stack.empty()&&!stack.substr(1).empty()){\
+      Int_t first{stack[0]}, second{stack[1]};\
+      stack=stack.substr(2);\
+      if(!(first>second)) break;\
+   } // .y
+	/JUMP_EQUAL/c\
+   while(true){\
+   if(!stack.empty()&&!stack.substr(1).empty()){\
+      Int_t first{stack[0]}, second{stack[1]};\
+      stack=stack.substr(2);\
+      if(first==second) break;\
+   } // .z
+
+	/IN_I/c\
+   {\
+      Int_t i;\
+      std::cin>>i;\
+      if(std::cin.fail()) throw runtime_error{\
+         "._: you were supposed to input an integer but failed"};\
+      stack=String_t{i}+stack;\
+   } // ._
+
+	/^$/{d;b}
+
+	s/..,/0x&/g
+	s|.*|   stack=String_t{&}+stack; // string literal|
+	'
++ SED_SCRIPT='s:2e,21,:\
+MULT\
+\
+:g
+s:2e,24,:\
+QUOT\
+\
+:g
+s:2e,25,:\
+MOD\
+\
+:g
+s:2e,2b,:\
+ADD\
+\
+:g
+s:2e,2d,:\
+DIFF\
+\
+:g
+s:2e,41,:\
+END_LOOP\
+\
+:g
+s:2e,43,:\
+DUPLICATE\
+\
+:g
+s:2e,44,:\
+RET\
+\
+:g
+s:2e,45,:\
+SUBROUTINE\
+\
+:g
+s:2e,46,:\
+CONTENT_LITERAL\
+\
+:g
+s:2e,49,:\
+IN_I\
+\
+:g
+s:2e,4d,:\
+PUSH_H\
+\
+:g
+s:2e,4e,:\
+OUT_I\
+\
+:g
+s:2e,4f,:\
+OUT_C\
+\
+:g
+s:2e,50,:\
+OUT_STR\
+\
+:g
+s:2e,52,:\
+RAND\
+\
+:g
+s:2e,53,:\
+DISCARD\
+\
+:g
+s:2e,54,:\
+POP_H\
+\
+:g
+s:2e,56,:\
+REVERSE\
+\
+:g
+s:2e,57,:\
+JUMP_ZERO\
+\
+:g
+s:2e,58,:\
+JUMP_NOT_LESS\
+\
+:g
+s:2e,59,:\
+JUMP_NOT_GREATER\
+\
+:g
+s:2e,5a,:\
+JUMP_EQUAL\
+\
+:g
+s:2e,5f,:\
+IN_I\
+\
+:g
+s:2e,61,:\
+END_LOOP\
+\
+:g
+s:2e,63,:\
+DUPLICATE\
+\
+:g
+s:2e,64,:\
+RET\
+\
+:g
+s:2e,65,:\
+SUBROUTINE\
+\
+:g
+s:2e,66,:\
+CONTENT_LITERAL\
+\
+:g
+s:2e,69,:\
+IN_I\
+\
+:g
+s:2e,6d,:\
+PUSH_H\
+\
+:g
+s:2e,6e,:\
+OUT_I\
+\
+:g
+s:2e,6f,:\
+OUT_C\
+\
+:g
+s:2e,70,:\
+OUT_STR\
+\
+:g
+s:2e,72,:\
+RAND\
+\
+:g
+s:2e,73,:\
+DISCARD\
+\
+:g
+s:2e,74,:\
+POP_H\
+\
+:g
+s:2e,76,:\
+REVERSE\
+\
+:g
+s:2e,77,:\
+JUMP_ZERO\
+\
+:g
+s:2e,78,:\
+JUMP_NOT_LESS\
+\
+:g
+s:2e,79,:\
+JUMP_NOT_GREATER\
+\
+:g
+s:2e,7a,:\
+JUMP_EQUAL\
+\
+:g'
++ sed 's:2e,21,:\
+MULT\
+\
+:g
+s:2e,24,:\
+QUOT\
+\
+:g
+s:2e,25,:\
+MOD\
+\
+:g
+s:2e,2b,:\
+ADD\
+\
+:g
+s:2e,2d,:\
+DIFF\
+\
+:g
+s:2e,41,:\
+END_LOOP\
+\
+:g
+s:2e,43,:\
+DUPLICATE\
+\
+:g
+s:2e,44,:\
+RET\
+\
+:g
+s:2e,45,:\
+SUBROUTINE\
+\
+:g
+s:2e,46,:\
+CONTENT_LITERAL\
+\
+:g
+s:2e,49,:\
+IN_I\
+\
+:g
+s:2e,4d,:\
+PUSH_H\
+\
+:g
+s:2e,4e,:\
+OUT_I\
+\
+:g
+s:2e,4f,:\
+OUT_C\
+\
+:g
+s:2e,50,:\
+OUT_STR\
+\
+:g
+s:2e,52,:\
+RAND\
+\
+:g
+s:2e,53,:\
+DISCARD\
+\
+:g
+s:2e,54,:\
+POP_H\
+\
+:g
+s:2e,56,:\
+REVERSE\
+\
+:g
+s:2e,57,:\
+JUMP_ZERO\
+\
+:g
+s:2e,58,:\
+JUMP_NOT_LESS\
+\
+:g
+s:2e,59,:\
+JUMP_NOT_GREATER\
+\
+:g
+s:2e,5a,:\
+JUMP_EQUAL\
+\
+:g
+s:2e,5f,:\
+IN_I\
+\
+:g
+s:2e,61,:\
+END_LOOP\
+\
+:g
+s:2e,63,:\
+DUPLICATE\
+\
+:g
+s:2e,64,:\
+RET\
+\
+:g
+s:2e,65,:\
+SUBROUTINE\
+\
+:g
+s:2e,66,:\
+CONTENT_LITERAL\
+\
+:g
+s:2e,69,:\
+IN_I\
+\
+:g
+s:2e,6d,:\
+PUSH_H\
+\
+:g
+s:2e,6e,:\
+OUT_I\
+\
+:g
+s:2e,6f,:\
+OUT_C\
+\
+:g
+s:2e,70,:\
+OUT_STR\
+\
+:g
+s:2e,72,:\
+RAND\
+\
+:g
+s:2e,73,:\
+DISCARD\
+\
+:g
+s:2e,74,:\
+POP_H\
+\
+:g
+s:2e,76,:\
+REVERSE\
+\
+:g
+s:2e,77,:\
+JUMP_ZERO\
+\
+:g
+s:2e,78,:\
+JUMP_NOT_LESS\
+\
+:g
+s:2e,79,:\
+JUMP_NOT_GREATER\
+\
+:g
+s:2e,7a,:\
+JUMP_EQUAL\
+\
+:g'
++ cat
++ case "$HAS_SUBROUTINE" in
++ echo '} // namespace pxemProgram'
++ cat
++ exit 0
